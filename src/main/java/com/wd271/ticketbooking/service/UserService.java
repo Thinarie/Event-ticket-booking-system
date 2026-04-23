@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Scanner;
+import java.io.File;
+import java.util.ArrayList;
 
 @Service
 public class UserService {
@@ -32,20 +35,32 @@ public class UserService {
         }
     }
 
-    // Rewrite the whole file with updated users
-    private void rewriteFile(List<user> users) {
-        try {
-            FileWriter writer = new FileWriter(FILE_PATH);
+    public List<user> getAllUsers() {
+        List<user> users = new ArrayList<>();
+        File file = new File(FILE_PATH);
 
-            for (user u : users) {
-                writer.write(u.toFileString());
-                writer.write("\n");
+        if (!file.exists()) return users;
+
+        try (Scanner sc = new Scanner(file)) {
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                if (!line.isEmpty()) {
+                    users.add(parseLine(line)); // FIXED
+                }
             }
-
-            writer.close();
-
         } catch (IOException e) {
-            System.out.println("Error writing file");
+            System.out.println("Error reading file");
         }
+
+        return users;
+    }public user findUserByUsername(String username) {
+        List<user> users = getAllUsers();
+
+        for (user u : users) {
+            if (u.getUsername().equalsIgnoreCase(username)) {
+                return u;
+            }
+        }
+        return null;
     }
 }
