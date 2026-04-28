@@ -70,5 +70,25 @@ public class UserService {
             }
             return null;
         }
+    //CREATE
+    public String registerUser(String username, String password, String email) {
+
+        if (findByUsername(username) != null) {
+            return "Username already taken!";
+        }
+
+        try (FileWriter fw = new FileWriter(FILE_PATH, true)) {
+
+            String id = "U" + System.currentTimeMillis();
+            user newUser = new RegisteredUser(id, username, password, email);
+
+            fw.write(newUser.toFileString() + "\n");
+
+            return "Registration successful!";
+
+        } catch (IOException e) {
+            return "Error writing file";
+        }
+    }
 
 }
