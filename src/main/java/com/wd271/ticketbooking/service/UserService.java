@@ -63,4 +63,12 @@ public class UserService {
         }
         return null;
     }
+    // READ - find one
+        public user findByUsername(String username) {
+            for (user u : getAllUsers()) {
+                if (u.getUsername().equals(username)) return u;
+            }
+            return null;
+        }
+
 }
