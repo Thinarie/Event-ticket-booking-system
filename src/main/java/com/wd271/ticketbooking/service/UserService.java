@@ -34,6 +34,19 @@ public class UserService {
             return new RegisteredUser(id, name, username, password);
         }
     }
+    //Add rewriteFile method to handle updating user data in file
+    private void rewriteFile(List<user> users) {
+        try (FileWriter writer = new FileWriter(FILE_PATH)) {
+
+            for (user u : users) {
+                writer.write(u.toFileString());
+                writer.write("\n");
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error writing file");
+        }
+    }
 
     public List<user> getAllUsers() {
         List<user> users = new ArrayList<>();
@@ -89,6 +102,7 @@ public class UserService {
         } catch (IOException e) {
             return "Error writing file";
         }
-    }//
+    }
+
 
 }
