@@ -120,6 +120,34 @@ public class UserService {
 
         return "User not found!";
     }
+    // DELETE
+    public String deleteUser(String username) {
+
+        List<user> list = getAllUsers();
+
+        boolean removed = list.removeIf(u -> username.equals(u.getUsername()));
+
+        if (removed) {
+            rewriteFile(list);
+            return "User deleted successfully!";
+        }
+
+        return "User not found!";
+    }
+    // LOGIN
+    public String login(String username, String password) {
+
+        user u = findByUsername(username);
+
+        if (u == null) {
+            return "User not found!";
+        }
+
+        if (password.equals(u.getPassword())) {
+            return "Login successful! Role: " + u.getRole();
+        }
+        return "Wrong password!";
+    }
 
 
 
