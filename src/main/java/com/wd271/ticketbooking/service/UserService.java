@@ -103,6 +103,24 @@ public class UserService {
             return "Error writing file";
         }
     }
+    // UPDATE
+    public String updateUser(String username, String newEmail, String newPassword) {
+
+        List<user> list = getAllUsers();
+
+        for (user u : list) {
+            if (username.equals(u.getUsername())) {
+                u.setEmail(newEmail);
+                u.setPassword(newPassword);
+
+                rewriteFile(list);
+                return "User updated successfully!";
+            }
+        }
+
+        return "User not found!";
+    }
+
 
 
 }
