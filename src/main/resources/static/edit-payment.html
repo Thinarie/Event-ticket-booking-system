@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Payment – Event Ticket Booking</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <style>
+    body { background:#0f0c29; background:linear-gradient(135deg,#0f0c29,#302b63,#24243e); min-height:100vh; color:#fff; }
+    .navbar { background:rgba(0,0,0,0.4); backdrop-filter:blur(10px); border-bottom:1px solid rgba(255,255,255,0.1); }
+    .navbar-brand { font-weight:700; font-size:1.4rem; color:#a78bfa !important; }
+    .nav-link { color:rgba(255,255,255,0.75) !important; }
+    .nav-link:hover { color:#a78bfa !important; }
+    .card { background:rgba(255,255,255,0.07); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.15); border-radius:16px; }
+    .card-header { background:rgba(59,130,246,0.2); border-bottom:1px solid rgba(255,255,255,0.1); border-radius:16px 16px 0 0 !important; }
+    .form-control, .form-select { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; }
+    .form-control:focus, .form-select:focus { background:rgba(255,255,255,0.12); border-color:#a78bfa; color:#fff; box-shadow:0 0 0 .25rem rgba(167,139,250,.25); }
+    .form-control[readonly] { background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.45); cursor:not-allowed; }
+    .form-control::placeholder { color:rgba(255,255,255,0.35); }
+    .form-select option { background:#302b63; color:#fff; }
+    .form-label { color:rgba(255,255,255,0.85); font-weight:500; }
+    .btn-update { background:linear-gradient(135deg,#3b82f6,#1d4ed8); border:none; border-radius:8px; font-weight:600; padding:.65rem 2rem; }
+    .btn-update:hover { background:linear-gradient(135deg,#1d4ed8,#1e3a8a); transform:translateY(-1px); }
+    .btn-back   { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; }
+    .btn-back:hover { background:rgba(255,255,255,0.15); color:#fff; }
+    .id-badge { background:rgba(167,139,250,0.15); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:.6rem 1rem; font-family:monospace; color:#c4b5fd; word-break:break-all; }
+    #loader { display:flex; justify-content:center; align-items:center; min-height:200px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ─────────────────────────────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg mb-4">
+  <div class="container">
+    <a class="navbar-brand" href="#"><i class="bi bi-ticket-perforated-fill me-2"></i>EventTickets</a>
+    <div class="ms-auto d-flex gap-3">
+      <a class="nav-link" href="payment.html"><i class="bi bi-credit-card me-1"></i>Make Payment</a>
+      <a class="nav-link" href="payment-history.html"><i class="bi bi-clock-history me-1"></i>Payment History</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container" style="max-width:640px;">
+
+  <div class="text-center mb-4">
+    <div style="font-size:2rem;color:#3b82f6;"><i class="bi bi-pencil-square"></i></div>
+    <h2 class="fw-bold mt-2">Edit Payment</h2>
+    <p class="text-muted">Update the details of an existing payment record</p>
+  </div>
+
+  <!-- Loading spinner -->
+  <div id="loader">
+    <div class="text-center">
+      <span class="spinner-border" style="color:#a78bfa;width:3rem;height:3rem;"></span>
+      <p class="mt-3 text-muted">Loading payment details…</p>
+    </div>
+  </div>
+
+  <!-- Edit Form (hidden until data loads) -->
+  <div id="formWrapper" style="display:none;">
+    <div class="card shadow-lg">
+      <div class="card-header py-3">
+        <h5 class="mb-0 text-white"><i class="bi bi-pencil-fill me-2"></i>Update Payment Record</h5>
+      </div>
+      <div class="card-body p-4">
+
+        <!-- Payment ID (read-only) -->
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-fingerprint me-1"></i>Payment ID (read-only)</label>
+          <div class="id-badge" id="displayPaymentId">–</div>
+          <input type="hidden" id="paymentId"/>
+        </div>
+
+        <!-- Type (read-only) -->
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-wallet2 me-1"></i>Payment Type (read-only)</label>
+          <input type="text" id="paymentType" class="form-control" readonly/>
+        </div>
+
+        <!-- Ticket ID (read-only) -->
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-ticket me-1"></i>Ticket ID (read-only)</label>
+          <input type="text" id="ticketId" class="form-control" readonly/>
+        </div>
+
+        <hr style="border-color:rgba(255,255,255,0.1);" />
+        <p class="small text-muted mb-3"><i class="bi bi-pencil me-1"></i>You can edit the fields below:</p>
+
+        <!-- Editable fields -->
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-currency-dollar me-1"></i>Amount (LKR)</label>
+          <input type="number" id="amount" class="form-control" min="1" step="0.01"/>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-calendar3 me-1"></i>Payment Date</label>
+          <input type="date" id="paymentDate" class="form-control"/>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-tag me-1"></i>Status</label>
+          <select id="status" class="form-select">
+            <option value="PENDING">PENDING</option>
+            <option value="COMPLETED">COMPLETED</option>
+            <option value="FAILED">FAILED</option>
+          </select>
+        </div>
+
+        <!-- Card-specific editable field -->
+        <div id="cardEditFields" style="display:none;">
+          <div class="mb-3">
+            <label class="form-label">Card Holder Name</label>
+            <input type="text" id="cardHolderName" class="form-control" placeholder="Card holder name"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Masked Card Number (read-only)</label>
+            <input type="text" id="maskedCardNumber" class="form-control" readonly/>
+          </div>
+        </div>
+
+        <!-- Cash-specific editable field -->
+        <div id="cashEditFields" style="display:none;">
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-person-badge me-1"></i>Received By (Staff Name)</label>
+            <input type="text" id="receivedBy" class="form-control" placeholder="Staff member name"/>
+          </div>
+        </div>
+
+        <!-- Alert area -->
+        <div id="alertBox"></div>
+
+        <!-- Buttons -->
+        <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-update flex-grow-1" onclick="submitUpdate()">
+            <i class="bi bi-check-circle-fill me-2"></i>Save Changes
+          </button>
+          <a href="payment-history.html" class="btn btn-back px-4">
+            <i class="bi bi-arrow-left me-1"></i>Back
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div id="errorState" style="display:none;" class="text-center py-5">
+    <i class="bi bi-exclamation-circle-fill" style="font-size:3rem;color:#ef4444;"></i>
+    <h4 class="mt-3">Payment Not Found</h4>
+    <p class="text-muted">The payment ID in the URL could not be found.</p>
+    <a href="payment-history.html" class="btn btn-update mt-2">← Back to History</a>
+  </div>
+
+</div>
+
+<br/><br/>
+
+<script>
+window.onload = async () => {
+  // Get payment ID from URL query string
+  const params    = new URLSearchParams(window.location.search);
+  const paymentId = params.get('id');
+
+  if (!paymentId) { showError(); return; }
+
+  try {
+    const res  = await fetch('http://localhost:8080/api/payments/' + paymentId);
+    if (!res.ok) { showError(); return; }
+    const data = await res.json();
+
+    // Populate fields
+    document.getElementById('paymentId').value          = data.paymentId;
+    document.getElementById('displayPaymentId').textContent = data.paymentId;
+    document.getElementById('paymentType').value        = data.paymentType;
+    document.getElementById('ticketId').value           = data.ticketId;
+    document.getElementById('amount').value             = data.amount;
+    document.getElementById('paymentDate').value        = data.paymentDate;
+    document.getElementById('status').value             = data.status;
+
+    if (data.paymentType === 'CARD') {
+      document.getElementById('cardEditFields').style.display = 'block';
+      document.getElementById('cardHolderName').value   = data.cardHolderName  || '';
+      document.getElementById('maskedCardNumber').value = data.maskedCardNumber || '';
+    } else {
+      document.getElementById('cashEditFields').style.display = 'block';
+      document.getElementById('receivedBy').value = data.receivedBy || '';
+    }
+
+    document.getElementById('loader').style.display      = 'none';
+    document.getElementById('formWrapper').style.display = 'block';
+
+  } catch (err) {
+    showError();
+  }
+};
+
+async function submitUpdate() {
+  const paymentId  = document.getElementById('paymentId').value;
+  const paymentType = document.getElementById('paymentType').value;
+
+  const body = {
+    paymentId,
+    amount:      document.getElementById('amount').value,
+    paymentDate: document.getElementById('paymentDate').value,
+    status:      document.getElementById('status').value
+  };
+
+  if (paymentType === 'CARD') {
+    body.cardHolderName = document.getElementById('cardHolderName').value.trim();
+    if (!body.cardHolderName) { showAlert('danger','Card holder name is required.'); return; }
+  } else {
+    body.receivedBy = document.getElementById('receivedBy').value.trim();
+    if (!body.receivedBy) { showAlert('danger','Received by (staff name) is required.'); return; }
+  }
+
+  try {
+    showAlert('info', '<span class="spinner-border spinner-border-sm me-2"></span>Saving changes…');
+    const res  = await fetch('http://localhost:8080/api/payments/update', {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showAlert('success', '✅ ' + data.message + ' Redirecting…');
+      setTimeout(() => window.location.href = 'payment-history.html', 1800);
+    } else {
+      showAlert('danger', '❌ ' + data.message);
+    }
+  } catch (err) {
+    showAlert('danger', 'Connection error: ' + err.message);
+  }
+}
+
+function showError() {
+  document.getElementById('loader').style.display      = 'none';
+  document.getElementById('errorState').style.display  = 'block';
+}
+
+function showAlert(type, msg) {
+  const colors = { danger:'#dc3545', info:'#0dcaf0', success:'#198754' };
+  document.getElementById('alertBox').innerHTML =
+    `<div class="alert mt-3" style="background:rgba(255,255,255,0.07);border:1px solid ${colors[type]};color:#fff;border-radius:8px;">${msg}</div>`;
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
