@@ -36,7 +36,7 @@ public class UserService {
     }
     //Add rewriteFile method to handle updating user data in file
     private void rewriteFile(List<user> users) {
-        try (FileWriter writer = new FileWriter(FILE_PATH)) {
+        try (FileWriter writer = new FileWriter(FILE_PATH,false)) {
 
             for (user u : users) {
                 writer.write(u.toFileString());
@@ -66,23 +66,16 @@ public class UserService {
         }
 
         return users;
-    }public user findUserByUsername(String username) {
-        List<user> users = getAllUsers();
-
-        for (user u : users) {
+    }
+    // READ - find one
+    public user findByUsername(String username) {
+        for (user u : getAllUsers()) {
             if (u.getUsername().equalsIgnoreCase(username)) {
                 return u;
             }
         }
         return null;
     }
-    // READ - find one
-        public user findByUsername(String username) {
-            for (user u : getAllUsers()) {
-                if (u.getUsername().equals(username)) return u;
-            }
-            return null;
-        }
     //CREATE
     public String registerUser(String username, String password, String email) {
 
@@ -109,7 +102,7 @@ public class UserService {
         List<user> list = getAllUsers();
 
         for (user u : list) {
-            if (username.equals(u.getUsername())) {
+            if (username.equalsIgnoreCase(u.getUsername())) {
                 u.setEmail(newEmail);
                 u.setPassword(newPassword);
 
@@ -125,7 +118,9 @@ public class UserService {
 
         List<user> list = getAllUsers();
 
-        boolean removed = list.removeIf(u -> username.equals(u.getUsername()));
+        boolean removed = list.removeIf(
+                u -> username.equalsIgnoreCase(u.getUsername())
+        );
 
         if (removed) {
             rewriteFile(list);
